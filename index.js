@@ -6,7 +6,16 @@ var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
 
 //var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
-var databaseUri = 'mongodb://192.168.88.212:27017/dev';
+//var databaseUri = 'mongodb://192.168.88.212:27017/dev';
+//var databaseUri = 'mongodb://192.168.43.229:27017/dev';
+//var databaseUri = 'mongodb://192.168.1.25:27017/dev';
+//var databaseUri = 'mongodb://192.168.1.20:27017/dev';
+//var databaseUri = 'mognodb://192.168.1.254:27017/dev';
+//var databaseUri = 'mongodb://192.168.88.205:27017/dev';
+//var databaseUri = 'mongodb://192.168.1.17:27017/dev';
+//var databaseUri = 'mongodb://172.20.10.9:27017/dev';
+//var databaseUri = 'mongodb://192.168.1.2:27017/dev';
+var databaseUri = 'mongodb://192.168.1.10:27017/dev';
 
 if (!databaseUri) {
   console.log('DATABASE_URI not specified, falling back to localhost.');
