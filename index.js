@@ -15,7 +15,7 @@ var path = require('path');
 //var databaseUri = 'mongodb://192.168.1.17:27017/dev';
 //var databaseUri = 'mongodb://172.20.10.9:27017/dev';
 //var databaseUri = 'mongodb://192.168.1.2:27017/dev';
-var databaseUri = 'mongodb://192.168.0.114:27017/dev';
+var databaseUri = 'mongodb://192.168.43.67:27017/dev';
 
 if (!databaseUri) {
   console.log('DATABASE_URI not specified, falling back to localhost.');
@@ -24,6 +24,7 @@ if (!databaseUri) {
 var api = new ParseServer({
   databaseURI: databaseUri || 'mongodb://192.168.88.212:27017/dev',
   cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
+  verbose: true,
   appId: process.env.APP_ID || 'myAppId',
   masterKey: process.env.MASTER_KEY || 'masterKey', //Add your master key here. Keep it secret!
   serverURL: process.env.SERVER_URL || 'http://10.0.2.15:1337/parse',  // Don't forget to change to https if needed
