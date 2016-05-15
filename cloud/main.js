@@ -397,3 +397,65 @@ Parse.Cloud.define('register_user', function(req, res) {
         }
     });
 });
+
+Parse.Cloud.define("new_comment", function(req, res) {
+    Parse.Cloud.useMasterKey();
+
+    var commenterId = req.params.commenter_id;
+    var commenterName = req.params.commenter_name;
+    var text = req.params.text;
+    var postId = req.params.post_id;
+    var replyNumber = req.params.reply_number;
+    
+
+    // TODO do some validation on the request parameters
+    
+    var CommentObject = Parse.Object.extend("comment");
+    var cObj = new CommentObject();
+    cObj.set("commenter_id", commenterId);
+    cObj.set("text", text);
+    cObj.set("post_id", postId);
+    cObj.set("reply_number", replyNumber);
+    cObj.set("commenter_name", commenterName);
+    
+    // save the comment object
+    cObj.save(null, {
+        success: function(cObj) {
+            // response with an Ok
+            res.success("ok");
+
+            // send a notification to the author
+            // fetch the post
+            var postQ = new Parse.Query("accepted_post");
+            postQ.get(postId, {
+                success: function(theObj) {
+                    Parse.Cloud.run('notify', {
+                        target_user_id: theObj.get("author_id"),
+                        notification_type: 2,
+                        title: "new comment",
+                        message: commenterName + "commented on your post",
+                        post_id: theObj.id,
+                        post_title: theObj.get("title"),
+                        unseen: true,
+                        performer_name: commenterName,
+                        comment_id : "" 
+                    }).then(function(str) {
+                        console.log(str);
+                        console.log("a new comment notification was sent");
+                    }, function(error) {
+                        console.log(error);
+                    });
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        },
+        error: function(cObj, error) {
+            console.log(error);
+            res.error(error);
+        }
+    });
+
+
+});
