@@ -129,7 +129,7 @@ Parse.Cloud.define('accept_post', function(req, res) {
                         }
                     });
 
-                    // TODO send the confirmation notification
+                    // send a confirmation notification
                     Parse.Cloud.run('notify', {
                         target_user_id: theObj.get("author_id"),
                         notification_type: 0,
@@ -158,6 +158,59 @@ Parse.Cloud.define('accept_post', function(req, res) {
         }
     });
 
+});
+
+Parse.Cloud.define("comment_reply", function(req, res) {
+    Parse.Cloud.useMasterKey();
+
+    var replyerId = req.params.replyer_id;
+    var text = req.params.text;
+    var commentId = req.params.comment_id;
+
+    var commentObject = Parse.Object.extend("comment_reply");
+    var rObj = new commentObject();
+    
+    rObj.set("replyer_id", replyerId);
+    rObj.set("text", text);
+    rObj.set("comment_id", commentId);
+
+    // save the object
+    rObj.save(null, {
+        success: function(rObj) {
+            res.success("ok");
+
+            // fetch the comment
+            var cQuery = new Parse.Query("comment");
+            cQuery.get(commentId, {
+                success: function(theObj) {
+                    
+                    // send a notification to the commenter
+            Parse.Cloud.run('notify', {
+                        target_user_id: theObj.get("author_id"),
+                        notification_type: 3,
+                        title: "comment reply",
+                        message: "someone commented on your post",
+                        post_id: "",
+                        post_title: "",
+                        unseen: true,
+                        performer_name: "replyer name should come here",
+                        comment_id : theObj.id
+                    }).then(function(str) {
+                        console.log(str);
+                    }, function(error) {
+                        console.log(error);
+                    });
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+                });
+        },
+        error: function(rObj, error) {
+            res.error(error);
+            console.log(error);
+        }
+    });
 });
 
 Parse.Cloud.define('reject_post', function(req, res) {
