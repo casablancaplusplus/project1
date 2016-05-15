@@ -212,6 +212,22 @@ Parse.Cloud.define('reject_post', function(req, res) {
                     });
 
                     // TODO send the rejected notification
+                    Parse.Cloud.run('notify', {
+                        target_user_id: theObj.get("author_id"),
+                        notification_type: 1,
+                        title: "rejection",
+                        message: "Your post was rejected",
+                        post_id: theObj.id,
+                        post_title: theObj.get("title"),
+                        unseen: true,
+                        performer_name: "Shirvooni",
+                        comment_id : ""
+                    }).then(function(str) {
+                        console.log(str);
+                    }, function(error) {
+                        console.log(error);
+                    });
+
                     
                 },
                 error: function(theObj, error) {
