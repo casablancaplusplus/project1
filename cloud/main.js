@@ -164,8 +164,10 @@ Parse.Cloud.define("comment_reply", function(req, res) {
     Parse.Cloud.useMasterKey();
 
     var replyerId = req.params.replyer_id;
+    var replyerName = req.params.replyer_name;
     var text = req.params.text;
     var commentId = req.params.comment_id;
+    
 
     var commentObject = Parse.Object.extend("comment_reply");
     var rObj = new commentObject();
@@ -173,6 +175,7 @@ Parse.Cloud.define("comment_reply", function(req, res) {
     rObj.set("replyer_id", replyerId);
     rObj.set("text", text);
     rObj.set("comment_id", commentId);
+    rObj.set("replyer_name", replyerName);
 
     // save the object
     rObj.save(null, {
@@ -186,14 +189,14 @@ Parse.Cloud.define("comment_reply", function(req, res) {
                     
                     // send a notification to the commenter
             Parse.Cloud.run('notify', {
-                        target_user_id: theObj.get("author_id"),
+                        target_user_id: theObj.get("commenter_id"),
                         notification_type: 3,
                         title: "comment reply",
                         message: "someone commented on your post",
-                        post_id: "",
+                        post_id: theObj.get("post_id"),
                         post_title: "",
                         unseen: true,
-                        performer_name: "replyer name should come here",
+                        performer_name: replyerName,
                         comment_id : theObj.id
                     }).then(function(str) {
                         console.log(str);
