@@ -1,4 +1,53 @@
 Parse.serverURL = "http://localhost:1337/parse";
+
+
+/* // the following code also works
+var fs = require('fs'),
+    xml2js = require('xml2js');
+var parser = new xml2js.Parser();
+fs.readFile('./cloud/strings.xml', function(err, data) {
+    parser.parseString(data, function(err, result) {
+        console.log(result);
+    });
+});
+*/
+
+// read the strings file
+var strings = {};
+
+var returnJSONResults = function(baseName, queryname) {
+    var XMLPath = __dirname + "/strings.xml";
+    var rawJSON = loadXMLDoc(XMLPath);
+    function loadXMLDoc(filePath) {
+        var fs = require('fs');
+        var xml2js = require('xml2js');
+        var json;
+        try {
+            var fileData = fs.readFileSync(filePath, 'utf-8');
+            var parser = new xml2js.Parser();
+            parser.parseString(fileData.substring(0, fileData.length), function(err, result) {
+                json = JSON.stringify(result);
+                //console.log(JSON.stringify(result.resources.string(0)));
+                // read the strings into the strings variable
+                
+                var string = "{";
+                for(var i = 0; i < result.resources.string.length; ++i) {
+                    var obj = result.resources.string[i];
+                    console.log(obj);
+                    
+                    string += "\"" + obj.$.name + "\" : \"" + obj._ + "\"";
+                    if( i < result.resources.string.length - 1) string += ","; 
+                }
+                string += "}";
+                strings = JSON.parse(string);
+                
+            });
+            console.log("File '" + filePath + "/ was successflly read.\n");
+            return json;
+        } catch(ex) {console.log(ex)}
+    }
+}();
+
 Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');
 });
@@ -134,7 +183,7 @@ Parse.Cloud.define('accept_post', function(req, res) {
                         target_user_id: theObj.get("author_id"),
                         notification_type: 0,
                         title: "acceptance",
-                        message: "Your post was published",
+                        message: strings.post_accepted,
                         post_id: theObj.id,
                         post_title: theObj.get("title"),
                         unseen: true,
@@ -192,7 +241,7 @@ Parse.Cloud.define("comment_reply", function(req, res) {
                         target_user_id: theObj.get("commenter_id"),
                         notification_type: 3,
                         title: "comment reply",
-                        message: "someone commented on your post",
+                        message: replyerName + " " + strings.comment_reply,
                         post_id: theObj.get("post_id"),
                         post_title: "",
                         unseen: true,
@@ -272,7 +321,7 @@ Parse.Cloud.define('reject_post', function(req, res) {
                         target_user_id: theObj.get("author_id"),
                         notification_type: 1,
                         title: "rejection",
-                        message: "Your post was rejected",
+                        message: strings.post_rejected,
                         post_id: theObj.id,
                         post_title: theObj.get("title"),
                         unseen: true,
@@ -489,7 +538,7 @@ Parse.Cloud.define("new_comment", function(req, res) {
                         target_user_id: theObj.get("author_id"),
                         notification_type: 2,
                         title: "new comment",
-                        message: commenterName + "commented on your post",
+                        message: commenterName + " " +  strings.new_comment,
                         post_id: theObj.id,
                         post_title: theObj.get("title"),
                         unseen: true,

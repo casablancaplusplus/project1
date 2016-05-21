@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="post_accepted">پست شما منتشر شد</string>
+	<string name="post_rejected">پست شما منتشر نشد</string>
+	<string name="new_comment">یکی از کاربران روی پست شما کامنت گذاشت</string>
+	<string name="comment_reply">یکی از کاربران به کامنت شما پاسخ داد</string>
+</resources>
