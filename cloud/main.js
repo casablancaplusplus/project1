@@ -178,6 +178,7 @@ Parse.Cloud.define('accept_post', function(req, res) {
                         }
                     });
 
+                    console.log(theObj.get("author_id") + " " + strings.post_accepted + " " + theObj.id + " ");
                     // send a confirmation notification
                     Parse.Cloud.run('notify', {
                         target_user_id: theObj.get("author_id"),
