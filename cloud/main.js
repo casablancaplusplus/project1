@@ -504,6 +504,48 @@ Parse.Cloud.define('register_user', function(req, res) {
     });
 });
 
+Parse.Cloud.define("generate_vercode", function(req, res) {
+    var phoneNumber = req.params.phone_number;
+    if(phoneNumber != null) {
+        // check for the user
+        var query = new Parse.Query(Parse.User);
+        query.equalTo("username", phoneNumber);
+        query.find(null, {
+            success: function(users) {
+                console.log(users.length);
+                if(users.length > 0) {
+                    var theUser = users[0];
+                    // generate the code
+                    var verificationCode = "";
+                    for(var i = 0; i < 5; i++) 
+                        verificationCode += Math.floor(Math.random() * 10);
+                    
+                    // save the code
+                    var verCodeObject = Parse.Object.extend("verification_code");
+                    var verObj = new verCodeObject();
+                    verObj.set("username", phoneNumber);
+                    verObj.set("ver_code", verificationCode);
+                    verObj.set("user_id", theUser.id);
+                    verObj.save(null, {
+                        success: function(verObj) {
+                            // TODO send the code to the user via sms
+                            // and if succeeded, respond with success
+                            // TODO replace the following line
+                            res.success(verificationCode);
+                        }, error: function(verObj, error) {
+                            console.log(error);
+                            res.error(error);
+                        }});
+                } else {
+                    res.error("No such user");
+                }
+            }, error: function(error) {
+                console.log(error);
+                res.error(error);
+            }});
+    }
+});
+
 Parse.Cloud.define("new_comment", function(req, res) {
     Parse.Cloud.useMasterKey();
 
