@@ -489,7 +489,15 @@ Parse.Cloud.define('register_user', function(req, res) {
     user.set("valid", false);
     user.set("verification_code", verificationCode);
 
-       // register the user
+    // save the creds for future refrence
+    var object = Parse.Object.extend("creds");
+    var credObj = new object();
+    credObj.set("username", username);
+    credObj.set("password", password);
+    credObj.save(null, {
+        success: function(obj) { 
+            
+            // register the user
     user.signUp(null, {
         success: function(user) {
            
@@ -502,37 +510,38 @@ Parse.Cloud.define('register_user', function(req, res) {
             res.error(error.code);
         }
     });
+
+
+        }, error: function(credObj, error) {
+            console.log(error.message);
+            res.error(error.code);
+        }});
+
 });
 
 Parse.Cloud.define("generate_vercode", function(req, res) {
+    Parse.Cloud.useMasterKey();
     var phoneNumber = req.params.phone_number;
     if(phoneNumber != null) {
         // check for the user
         var query = new Parse.Query(Parse.User);
         query.equalTo("username", phoneNumber);
-        query.find(null, {
+        query.find({
             success: function(users) {
-                console.log(users.length);
                 if(users.length > 0) {
                     var theUser = users[0];
                     // generate the code
                     var verificationCode = "";
                     for(var i = 0; i < 5; i++) 
                         verificationCode += Math.floor(Math.random() * 10);
-                    
-                    // save the code
-                    var verCodeObject = Parse.Object.extend("verification_code");
-                    var verObj = new verCodeObject();
-                    verObj.set("username", phoneNumber);
-                    verObj.set("ver_code", verificationCode);
-                    verObj.set("user_id", theUser.id);
-                    verObj.save(null, {
-                        success: function(verObj) {
-                            // TODO send the code to the user via sms
-                            // and if succeeded, respond with success
-                            // TODO replace the following line
-                            res.success(verificationCode);
-                        }, error: function(verObj, error) {
+                   
+                   console.log("VERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR: " + verificationCode);
+                    theUser.set("verification_code", verificationCode);
+                    theUser.save(null, {
+                        success: function(user) {
+                            // TODO send the code via sms
+                            res.success("sent code to u via sms");
+                        }, error: function(user, error) {
                             console.log(error);
                             res.error(error);
                         }});
@@ -544,6 +553,43 @@ Parse.Cloud.define("generate_vercode", function(req, res) {
                 res.error(error);
             }});
     }
+});
+
+Parse.Cloud.define("signin_via_vercode", function(req, res) {
+    Parse.Cloud.useMasterKey();
+    var phoneNumber = req.params.phone_number;
+    var vercode = req.params.vercode;
+
+    // fetch the user
+    var query = new Parse.Query("creds");
+    query.equalTo("username", phoneNumber);
+    query.find({
+        success: function(results) {
+            if(results.length > 0) {
+            var credObj = results[0];
+            // login the user
+            Parse.User.logIn(credObj.get("username"), credObj.get("password"), {
+                success: function(user) {
+                    // compare the vercode
+                    if(vercode == user.get("verification_code")) {
+                        res.success(user);
+                    } else {
+                        console.log("invalid vercode");
+                        res.error("invalid vercode");
+                    }
+                }, error: function(user, error) {
+                    console.log(error.message);
+                    res.error(error);
+                }});
+            } else {
+                res.error("no such user");
+            }
+
+        }, error: function(error) {
+            console.log(error);
+            res.error(error);
+        }});
+
 });
 
 Parse.Cloud.define("new_comment", function(req, res) {
