@@ -159,6 +159,8 @@ Parse.Cloud.define('accept_post', function(req, res) {
             aObj.set('user', uObj.get('user'));
             aObj.set('category_fa', uObj.get('category_fa'));
 
+            aObj.set('thumbFile', uObj.get('thumbFile'));
+
             // save the object
             aObj.save(null, {
                 success: function(theObj) {
